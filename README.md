@@ -11,10 +11,10 @@ A user-friendly, in-browser PDF annotation tool that allows you to open, view, a
 ## Installation
 
 Clone the repository and open the `index.html` file in a web browser:
-´´´
+```
 git clone https://github.com/adiKhan12/pdf-annotator-javascript.git
 cd pdf-annotation-tool
-´´´
+```
 
 
 Then, open the `index.html` file in your preferred web browser.
