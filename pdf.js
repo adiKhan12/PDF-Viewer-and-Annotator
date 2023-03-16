@@ -16,7 +16,11 @@ const nextPageButton = document.getElementById('next-page');
 
 const noPdfMessage = document.getElementById('no-pdf-message');
 
+const penDropdown = document.getElementById('pen');
+const penSizes = document.getElementById('pen-sizes');
+penSizes.style.display = 'none';
 
+let penSize = 1;
 let pdfDoc = null;
 let pageNum = 1;
 let tool = 'pen';
@@ -55,7 +59,6 @@ fileInput.addEventListener('change', async (e) => {
 zoomInButton.addEventListener('click', () => {
     scale += 0.25;
     renderPDF(pdfData);
-    console.log(scale);
 });
 
 zoomOutButton.addEventListener('click', () => {
@@ -78,10 +81,48 @@ nextPageButton.addEventListener('click', async () => {
 });
 
 
+function changeCursorStyle(cursor) {
+    annotationCanvas.style.cursor = cursor;
+}
 
-penButton.addEventListener('click', () => tool = 'pen');
-highlighterButton.addEventListener('click', () => tool = 'highlighter');
-eraserButton.addEventListener('click', () => tool = 'eraser');
+penButton.addEventListener('click', () => {
+    tool = 'pen';
+    changeCursorStyle('crosshair');
+});
+highlighterButton.addEventListener('click', () => {
+    tool = 'highlighter';
+    changeCursorStyle('crosshair');
+});
+
+eraserButton.addEventListener('click', () => {
+    tool = 'eraser';
+    changeCursorStyle('crosshair');
+});
+
+penDropdown.addEventListener('click', () => {
+    penSizes.style.display = penSizes.style.display === 'block' ? 'none' : 'block';
+});
+
+penSizes.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (e.target.tagName === 'A') {
+        penSize = parseInt(e.target.dataset.size);
+        tool = 'pen';
+    }
+});
+
+document.addEventListener('click', (e) => {
+    if (!penDropdown.contains(e.target) && e.target !== penDropdown) {
+        penSizes.style.display = 'none';
+    }
+});
+
+document.querySelectorAll('#pen-sizes a').forEach((sizeOption) => {
+    sizeOption.addEventListener('click', (e) => {
+        e.preventDefault();
+        penSize = parseInt(sizeOption.dataset.size, 10);
+    });
+});
 
 annotationCanvas.addEventListener('mousedown', (e) => {
     drawing = true;
@@ -92,9 +133,10 @@ annotationCanvas.addEventListener('mousedown', (e) => {
     if (tool === 'eraser') {
         eraseAnnotations(x, y, 10); // Erase annotations within a radius of 10 pixels
     } else {
-        annotations.push({ tool, points: [{ x, y }] });
+        annotations.push({ tool, penSize, points: [{ x, y }] });
     }
 });
+
 
 annotationCanvas.addEventListener('mousemove', (e) => {
     if (!drawing) return;
@@ -135,13 +177,12 @@ async function renderPDF(pdfDoc) {
     noPdfMessage.style.display = 'none';
 }
 
-
 function renderAnnotations() {
     annotationContext.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
 
     for (const annotation of annotations) {
-        const { tool, points } = annotation;
-        annotationContext.lineWidth = tool === 'pen' ? 1 : 10;
+        const { tool, penSize, points } = annotation;
+        annotationContext.lineWidth = tool === 'pen' ? penSize : 10;
         annotationContext.strokeStyle = tool === 'highlighter' ? 'rgba(255, 255, 0, 0.5)' : 'black';
         annotationContext.globalCompositeOperation = tool === 'eraser' ? 'destination-out' : 'source-over';
         annotationContext.beginPath();
@@ -153,6 +194,7 @@ function renderAnnotations() {
         annotationContext.stroke();
     }
 }
+
 
 function eraseAnnotations(x, y, radius) {
     annotations = annotations.filter((annotation) => {

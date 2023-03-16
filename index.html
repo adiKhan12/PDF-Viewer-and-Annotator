@@ -14,7 +14,17 @@
   <input type="file" id="file-input" accept=".pdf" />
   <div id="toolbar">
     <div>
-      <button id="pen"><i class="fas fa-pen"></i> Pen</button>
+      <button id="pen" class="dropdown">
+        <i class="fas fa-pen"></i> Pen
+        <div id="pen-sizes" class="dropdown-content">
+          <a href="#" data-size="1">1px</a>
+          <a href="#" data-size="2">2px</a>
+          <a href="#" data-size="3">3px</a>
+          <a href="#" data-size="4">4px</a>
+          <a href="#" data-size="5">5px</a>
+        </div>
+      </button>      
+
       <button id="highlighter"><i class="fas fa-highlighter"></i> Highlighter</button>
       <button id="eraser"><i class="fas fa-eraser"></i> Eraser</button>
     </div>
