@@ -37,7 +37,7 @@ h1 {
 #toolbar button {
   background-color: #fafafa;
   justify-content: space-between;
-  background-image: linear-gradient(120deg, #30bdda 0%, #cdebe6 100%);
+  background-image: linear-gradient(120deg, #53b6e8 0%, #9ed6dd 100%);
   border: 1px solid #e0e0e0;
   outline: none;
   cursor: pointer;
