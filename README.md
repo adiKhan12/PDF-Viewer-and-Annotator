@@ -31,5 +31,11 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 Please make sure to update tests as appropriate.
 
+##License
+
+This is free and unencumbered software released into the public domain - see the [LICENSE](LICENSE) file for details 
+
+[]: # Path: pdf-annotator-javascript/LICENSE
+
 
 
