@@ -1,6 +1,6 @@
 # PDF Annotation Tool
 
-A user-friendly, in-browser PDF annotation tool that allows you to open, view, annotate, and save PDF files. Built with HTML, CSS, and JavaScript, and leveraging the pdf.js and jsPDF libraries.
+A user-friendly, in-browser PDF annotation tool that allows you to open, view, annotate, and save PDF files. Built with HTML, CSS, and JavaScript, and leveraging the jsPDF librarie for genrating the pdf document.
 
 ## Features
 
