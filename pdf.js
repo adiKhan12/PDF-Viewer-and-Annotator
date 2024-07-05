@@ -8,6 +8,7 @@ const CanvasWrapper = document.getElementById('canvas-wrapper');
 const penButton = document.getElementById('pen');
 const highlighterButton = document.getElementById('highlighter');
 const eraserButton = document.getElementById('eraser');
+const sizeSlider = document.getElementById('size-slider');
 const saveButton = document.getElementById('save');
 const zoomInButton = document.getElementById('zoom-in');
 const zoomOutButton = document.getElementById('zoom-out');
@@ -16,19 +17,14 @@ const nextPageButton = document.getElementById('next-page');
 
 const noPdfMessage = document.getElementById('no-pdf-message');
 
-const penDropdown = document.getElementById('pen');
-const penSizes = document.getElementById('pen-sizes');
-penSizes.style.display = 'none';
-
+let tool = 'pen';
 let penSize = 1;
 let pdfDoc = null;
 let pageNum = 1;
-let tool = 'pen';
 let drawing = false;
 let annotations = [];
 let scale = 1;
 let originalPageDimensions = {};
-
 
 annotationCanvas.width = canvas.width;
 annotationCanvas.height = canvas.height;
@@ -64,8 +60,6 @@ fileInput.addEventListener('change', async (e) => {
     reader.readAsArrayBuffer(file);
 });
 
-
-
 zoomInButton.addEventListener('click', () => {
     scale += 0.25;
     renderPDF(pdfData);
@@ -90,48 +84,35 @@ nextPageButton.addEventListener('click', async () => {
     renderPDF(pdfData);
 });
 
-
-function changeCursorStyle(cursor) {
-    annotationCanvas.style.cursor = cursor;
-}
-
-penButton.addEventListener('click', () => {
+penButton.addEventListener('click', (e) => {
     tool = 'pen';
+    positionSlider(e.target);
+    sizeSlider.value = penSize;
     changeCursorStyle('crosshair');
 });
-highlighterButton.addEventListener('click', () => {
+
+highlighterButton.addEventListener('click', (e) => {
     tool = 'highlighter';
+    positionSlider(e.target);
+    sizeSlider.value = penSize;
     changeCursorStyle('crosshair');
 });
 
-eraserButton.addEventListener('click', () => {
+eraserButton.addEventListener('click', (e) => {
     tool = 'eraser';
+    positionSlider(e.target);
+    sizeSlider.value = penSize;
     changeCursorStyle('crosshair');
-});
-
-penDropdown.addEventListener('click', () => {
-    penSizes.style.display = penSizes.style.display === 'block' ? 'none' : 'block';
-});
-
-penSizes.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (e.target.tagName === 'A') {
-        penSize = parseInt(e.target.dataset.size);
-        tool = 'pen';
-    }
 });
 
 document.addEventListener('click', (e) => {
-    if (!penDropdown.contains(e.target) && e.target !== penDropdown) {
-        penSizes.style.display = 'none';
+    if (!penButton.contains(e.target) && !highlighterButton.contains(e.target) && !eraserButton.contains(e.target) && !sizeSlider.contains(e.target)) {
+        sizeSlider.style.display = 'none';
     }
 });
 
-document.querySelectorAll('#pen-sizes a').forEach((sizeOption) => {
-    sizeOption.addEventListener('click', (e) => {
-        e.preventDefault();
-        penSize = parseInt(sizeOption.dataset.size, 10);
-    });
+sizeSlider.addEventListener('input', () => {
+    penSize = sizeSlider.value;
 });
 
 annotationCanvas.addEventListener('mousedown', (e) => {
@@ -145,7 +126,7 @@ annotationCanvas.addEventListener('mousedown', (e) => {
     }
 
     if (tool === 'eraser') {
-        eraseAnnotations(x, y, 10); // Erase annotations within a radius of 10 pixels
+        eraseAnnotations(x, y, penSize); // Use penSize for eraser radius
     } else {
         annotations[pageNum].push({ tool, penSize, points: [{ x, y }] });
     }
@@ -159,7 +140,7 @@ annotationCanvas.addEventListener('mousemove', (e) => {
     const currentAnnotation = annotations[pageNum][annotations[pageNum].length - 1];
 
     if (tool === 'eraser') {
-        eraseAnnotations(x, y, 10); // Erase annotations within a radius of 10 pixels
+        eraseAnnotations(x, y, penSize); // Use penSize for eraser radius
     } else {
         currentAnnotation.points.push({ x, y });
         renderAnnotations();
@@ -188,6 +169,8 @@ async function renderPDF(pdfDoc) {
 
     // Hide the no-pdf-message when a PDF is loaded
     noPdfMessage.style.display = 'none';
+
+    renderAnnotations(); // Render annotations after the page is rendered
 }
 
 function renderAnnotations() {
@@ -197,7 +180,7 @@ function renderAnnotations() {
 
     for (const annotation of annotations[pageNum]) {
         const { tool, penSize, points } = annotation;
-        annotationContext.lineWidth = tool === 'pen' ? penSize * scale : 10 * scale;
+        annotationContext.lineWidth = tool === 'pen' ? penSize * scale : penSize * scale;
         annotationContext.strokeStyle = tool === 'highlighter' ? 'rgba(255, 255, 0, 0.5)' : 'black';
         annotationContext.globalCompositeOperation = tool === 'eraser' ? 'destination-out' : 'source-over';
         annotationContext.beginPath();
@@ -230,32 +213,6 @@ function eraseAnnotations(x, y, radius) {
 }
 
 window.jsPDF = window.jspdf.jsPDF;
-
-
-
-async function renderPDF(pdfDoc) {
-    const page = await pdfDoc.getPage(pageNum);
-    const viewport = page.getViewport({ scale });
-
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    annotationCanvas.width = viewport.width;
-    annotationCanvas.height = viewport.height;
-
-    const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-    };
-    await page.render(renderContext).promise;
-
-    // Show the canvases when a PDF is loaded
-    CanvasWrapper.style.display = 'inline-block';
-
-    // Hide the no-pdf-message when a PDF is loaded
-    noPdfMessage.style.display = 'none';
-
-    renderAnnotations(); // Render annotations after the page is rendered
-}
 
 saveButton.addEventListener('click', async () => {
     if (!pdfData) {
@@ -321,8 +278,13 @@ async function renderPageToCanvas(pageNumber, customScale) {
     renderAnnotations(); // Render annotations after the page is rendered
 }
 
+function changeCursorStyle(cursor) {
+    annotationCanvas.style.cursor = cursor;
+}
 
-
-
-
-
+function positionSlider(button) {
+    const rect = button.getBoundingClientRect();
+    sizeSlider.style.display = 'block';
+    sizeSlider.style.left = `${rect.left - 238}px`;
+    sizeSlider.style.top = `${rect.bottom}px`;
+}

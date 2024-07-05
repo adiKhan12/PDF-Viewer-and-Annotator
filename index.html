@@ -7,27 +7,17 @@
   <title>PDF Annotation App</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css">
-
 </head>
 
 <body>
   <input type="file" id="file-input" accept=".pdf" />
   <div id="toolbar">
-    <div>
-      <button id="pen" class="dropdown">
-        <i class="fas fa-pen"></i> Pen
-        <div id="pen-sizes" class="dropdown-content">
-          <a href="#" data-size="1">1px</a>
-          <a href="#" data-size="2">2px</a>
-          <a href="#" data-size="3">3px</a>
-          <a href="#" data-size="4">4px</a>
-          <a href="#" data-size="5">5px</a>
-        </div>
-      </button>      
-
-      <button id="highlighter"><i class="fas fa-highlighter"></i> Highlighter</button>
-      <button id="eraser"><i class="fas fa-eraser"></i> Eraser</button>
+    <div class="tool-buttons">
+      <button id="pen" class="tool-button"><i class="fas fa-pen"></i> Pen</button>
+      <button id="highlighter" class="tool-button"><i class="fas fa-highlighter"></i> Highlighter</button>
+      <button id="eraser" class="tool-button"><i class="fas fa-eraser"></i> Eraser</button>
     </div>
+    <input type="range" id="size-slider" min="1" max="20" value="1" style="display:none; position: absolute;">
     <div class="toolbar-divider"></div>
     <div>
       <button id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
@@ -43,7 +33,6 @@
       <button id="open-pdf"><i class="fas fa-file-pdf"></i> Open PDF</button>
       <button id="save"><i class="fas fa-save"></i> Save</button>
     </div>
-
   </div>
 
   <div id="no-pdf-message">Please click "Open PDF" to open a PDF file.</div>
@@ -51,14 +40,10 @@
   <div id="canvas-wrapper">
     <canvas id="pdf-canvas"></canvas>
     <canvas id="annotation-canvas"></canvas>
-
   </div>
 
-
-  <!-- Use the official pdfjs-dist package from the npm CDN -->
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
-
   <script src="pdf.js"></script>
 </body>
 
