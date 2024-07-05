@@ -27,6 +27,8 @@ let tool = 'pen';
 let drawing = false;
 let annotations = [];
 let scale = 1;
+let originalPageDimensions = {};
+
 
 annotationCanvas.width = canvas.width;
 annotationCanvas.height = canvas.height;
@@ -49,6 +51,14 @@ fileInput.addEventListener('change', async (e) => {
     reader.onload = async (e) => {
         const typedArray = new Uint8Array(e.target.result);
         pdfData = await pdfjsLib.getDocument({ data: typedArray }).promise;
+
+        // Store the original dimensions for each page
+        for (let i = 1; i <= pdfData.numPages; i++) {
+            const page = await pdfData.getPage(i);
+            const viewport = page.getViewport({ scale: 1 });
+            originalPageDimensions[i] = { width: viewport.width, height: viewport.height };
+        }
+
         renderPDF(pdfData);
     };
     reader.readAsArrayBuffer(file);
@@ -130,20 +140,23 @@ annotationCanvas.addEventListener('mousedown', (e) => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    if (!annotations[pageNum]) {
+        annotations[pageNum] = [];
+    }
+
     if (tool === 'eraser') {
         eraseAnnotations(x, y, 10); // Erase annotations within a radius of 10 pixels
     } else {
-        annotations.push({ tool, penSize, points: [{ x, y }] });
+        annotations[pageNum].push({ tool, penSize, points: [{ x, y }] });
     }
 });
-
 
 annotationCanvas.addEventListener('mousemove', (e) => {
     if (!drawing) return;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    const currentAnnotation = annotations[annotations.length - 1];
+    const currentAnnotation = annotations[pageNum][annotations[pageNum].length - 1];
 
     if (tool === 'eraser') {
         eraseAnnotations(x, y, 10); // Erase annotations within a radius of 10 pixels
@@ -180,24 +193,27 @@ async function renderPDF(pdfDoc) {
 function renderAnnotations() {
     annotationContext.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
 
-    for (const annotation of annotations) {
+    if (!annotations[pageNum]) return; // Return if no annotations for the current page
+
+    for (const annotation of annotations[pageNum]) {
         const { tool, penSize, points } = annotation;
-        annotationContext.lineWidth = tool === 'pen' ? penSize : 10;
+        annotationContext.lineWidth = tool === 'pen' ? penSize * scale : 10 * scale;
         annotationContext.strokeStyle = tool === 'highlighter' ? 'rgba(255, 255, 0, 0.5)' : 'black';
         annotationContext.globalCompositeOperation = tool === 'eraser' ? 'destination-out' : 'source-over';
         annotationContext.beginPath();
-        annotationContext.moveTo(points[0].x, points[0].y);
+        annotationContext.moveTo(points[0].x * scale, points[0].y * scale);
 
         for (const point of points) {
-            annotationContext.lineTo(point.x, point.y);
+            annotationContext.lineTo(point.x * scale, point.y * scale);
         }
         annotationContext.stroke();
     }
 }
 
-
 function eraseAnnotations(x, y, radius) {
-    annotations = annotations.filter((annotation) => {
+    if (!annotations[pageNum]) return; // Return if no annotations for the current page
+
+    annotations[pageNum] = annotations[pageNum].filter((annotation) => {
         for (const point of annotation.points) {
             if (
                 Math.sqrt(
@@ -215,41 +231,97 @@ function eraseAnnotations(x, y, radius) {
 
 window.jsPDF = window.jspdf.jsPDF;
 
-saveButton.addEventListener('click', async () => {
-    const exportScale = 4; // Increase this value to improve the quality (e.g., 2, 3, or 4)
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width * exportScale;
-    tempCanvas.height = canvas.height * exportScale;
-    const tempContext = tempCanvas.getContext('2d');
-    tempContext.scale(exportScale, exportScale);
-    await renderPDF(pdfData);
-    tempContext.drawImage(canvas, 0, 0);
 
+
+async function renderPDF(pdfDoc) {
+    const page = await pdfDoc.getPage(pageNum);
+    const viewport = page.getViewport({ scale });
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    annotationCanvas.width = viewport.width;
+    annotationCanvas.height = viewport.height;
+
+    const renderContext = {
+        canvasContext: context,
+        viewport: viewport,
+    };
+    await page.render(renderContext).promise;
+
+    // Show the canvases when a PDF is loaded
+    CanvasWrapper.style.display = 'inline-block';
+
+    // Hide the no-pdf-message when a PDF is loaded
+    noPdfMessage.style.display = 'none';
+
+    renderAnnotations(); // Render annotations after the page is rendered
+}
+
+saveButton.addEventListener('click', async () => {
     if (!pdfData) {
         noPdfMessage.style.display = 'block';
         return;
     }
 
-    // Draw the annotations on the temporary canvas
-    for (const annotation of annotations) {
-        tempContext.strokeStyle = annotation.tool === 'pen' ? 'black' : 'yellow';
-        tempContext.lineWidth = annotation.tool === 'pen' ? 3 : 10;
-        tempContext.beginPath();
+    const pdf = new jsPDF('p', 'pt', [originalPageDimensions[1].width, originalPageDimensions[1].height]);
 
-        const [firstPoint, ...remainingPoints] = annotation.points;
-        tempContext.moveTo(firstPoint.x, firstPoint.y);
+    for (let i = 1; i <= pdfData.numPages; i++) {
+        await renderPageToCanvas(i, 1); // Render at original scale
 
-        for (const point of remainingPoints) {
-            tempContext.lineTo(point.x, point.y);
+        const tempCanvas = document.createElement('canvas');
+        const { width, height } = originalPageDimensions[i];
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const tempContext = tempCanvas.getContext('2d');
+        tempContext.drawImage(canvas, 0, 0, width, height);
+
+        // Draw the annotations on the temporary canvas
+        if (annotations[i]) {
+            for (const annotation of annotations[i]) {
+                tempContext.strokeStyle = annotation.tool === 'pen' ? 'black' : 'yellow';
+                tempContext.lineWidth = annotation.tool === 'pen' ? 3 : 10;
+                tempContext.beginPath();
+
+                const [firstPoint, ...remainingPoints] = annotation.points;
+                tempContext.moveTo(firstPoint.x, firstPoint.y);
+
+                for (const point of remainingPoints) {
+                    tempContext.lineTo(point.x, point.y);
+                }
+
+                tempContext.stroke();
+            }
         }
 
-        tempContext.stroke();
+        if (i > 1) {
+            pdf.addPage([width, height]);
+        }
+
+        pdf.addImage(tempCanvas.toDataURL('image/png'), 'PNG', 0, 0, width, height);
     }
 
-    const pdf = new jsPDF('p', 'pt', [tempCanvas.width, tempCanvas.height]);
-    pdf.addImage(tempCanvas.toDataURL('image/png'), 'PNG', 0, 0, tempCanvas.width, tempCanvas.height);
     pdf.save('annotated.pdf');
 });
+
+async function renderPageToCanvas(pageNumber, customScale) {
+    const page = await pdfData.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: customScale });
+
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    annotationCanvas.width = viewport.width;
+    annotationCanvas.height = viewport.height;
+
+    const renderContext = {
+        canvasContext: context,
+        viewport: viewport,
+    };
+
+    await page.render(renderContext).promise;
+    renderAnnotations(); // Render annotations after the page is rendered
+}
+
+
 
 
 
