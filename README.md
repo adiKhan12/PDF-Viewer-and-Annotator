@@ -2,11 +2,12 @@
 
 A user-friendly, in-browser PDF annotation tool that allows you to open, view, annotate, and save PDF files. Built with HTML, CSS, and JavaScript, and leveraging the jsPDF librarie for genrating the pdf document.
 
-## Features
+## Current and Upcoming Features
 
-- Open and view PDFs in the browser
-- Pen, highlighter, and eraser annotation tools
-- Zoom, navigate, and save annotated PDFs
+- [x] Open and view PDFs in the browser
+- [x] Pen, highlighter, and eraser annotation tools
+- [x] Zoom, navigate, and save annotated PDFs
+- [ ] Integrate Large Language Model (LLM) for document interaction (Upcoming)
 
 ## Installation
 
