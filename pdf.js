@@ -286,6 +286,6 @@ function changeCursorStyle(cursor) {
 function positionSlider(button) {
     const rect = button.getBoundingClientRect();
     sizeSlider.style.display = 'block';
-    sizeSlider.style.left = `${rect.left - 238}px`; // Adjusted for proper positioning
+    sizeSlider.style.left = `${rect.left - 233}px`; // Adjusted for proper positioning
     sizeSlider.style.top = `${rect.bottom}px`;
 }

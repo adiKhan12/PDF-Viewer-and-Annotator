@@ -105,4 +105,13 @@ h1 {
   background-color: #bdf0e6;
   padding: 20px;
   border: 1px solid #ccc;
-  border-radius: 10
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 80%;
+  max-width: 400px;
+}
+
+#size-slider {
+  width: 100px;
+}
