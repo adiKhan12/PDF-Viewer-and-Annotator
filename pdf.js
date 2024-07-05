@@ -180,8 +180,8 @@ function renderAnnotations() {
 
     for (const annotation of annotations[pageNum]) {
         const { tool, penSize, points } = annotation;
-        annotationContext.lineWidth = tool === 'pen' ? penSize * scale : penSize * scale;
-        annotationContext.strokeStyle = tool === 'highlighter' ? 'rgba(255, 255, 0, 0.5)' : 'black';
+        annotationContext.lineWidth = penSize * scale;
+        annotationContext.strokeStyle = tool === 'highlighter' ? 'rgba(255, 255, 0, 0.3)' : 'black';
         annotationContext.globalCompositeOperation = tool === 'eraser' ? 'destination-out' : 'source-over';
         annotationContext.beginPath();
         annotationContext.moveTo(points[0].x * scale, points[0].y * scale);
@@ -235,8 +235,9 @@ saveButton.addEventListener('click', async () => {
         // Draw the annotations on the temporary canvas
         if (annotations[i]) {
             for (const annotation of annotations[i]) {
-                tempContext.strokeStyle = annotation.tool === 'pen' ? 'black' : 'yellow';
-                tempContext.lineWidth = annotation.tool === 'pen' ? 3 : 10;
+                tempContext.lineWidth = annotation.penSize;
+                tempContext.strokeStyle = annotation.tool === 'pen' ? 'black' : 'rgba(255, 255, 0, 0.3)';
+                tempContext.globalCompositeOperation = annotation.tool === 'eraser' ? 'destination-out' : 'source-over';
                 tempContext.beginPath();
 
                 const [firstPoint, ...remainingPoints] = annotation.points;
@@ -285,6 +286,6 @@ function changeCursorStyle(cursor) {
 function positionSlider(button) {
     const rect = button.getBoundingClientRect();
     sizeSlider.style.display = 'block';
-    sizeSlider.style.left = `${rect.left - 238}px`;
+    sizeSlider.style.left = `${rect.left - 238}px`; // Adjusted for proper positioning
     sizeSlider.style.top = `${rect.bottom}px`;
 }
