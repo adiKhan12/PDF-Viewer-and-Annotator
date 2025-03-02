@@ -10,36 +10,167 @@
 </head>
 
 <body>
+  <div class="app-header">
+    <h1>PDF Annotation Tool</h1>
+    <button id="help-button" class="help-button"><i class="fas fa-question-circle"></i> Shortcuts</button>
+  </div>
+  
   <input type="file" id="file-input" accept=".pdf" />
   <div id="toolbar">
-    <div class="tool-buttons">
-      <button id="pen" class="tool-button"><i class="fas fa-pen"></i> Pen</button>
-      <button id="highlighter" class="tool-button"><i class="fas fa-highlighter"></i> Highlighter</button>
-      <button id="eraser" class="tool-button"><i class="fas fa-eraser"></i> Eraser</button>
+    <div class="toolbar-row">
+      <div class="toolbar-group">
+        <button id="open-pdf"><i class="fas fa-file-pdf"></i> Open PDF</button>
+        <button id="save"><i class="fas fa-save"></i> Save</button>
+        <button id="clear-annotations"><i class="fas fa-trash"></i> Clear</button>
+      </div>
+      
+      <div class="toolbar-group">
+        <button id="prev-page"><i class="fas fa-chevron-left"></i> Prev</button>
+        <span id="page-counter" class="page-info">Page 1 of 1</span>
+        <button id="next-page">Next <i class="fas fa-chevron-right"></i></button>
+      </div>
+      
+      <div class="toolbar-group">
+        <button id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
+        <span id="zoom-level" class="page-info">100%</span>
+        <button id="zoom-out"><i class="fas fa-search-minus"></i> Zoom Out</button>
+        <button id="fit-to-width"><i class="fas fa-expand-arrows-alt"></i> Fit Width</button>
+      </div>
     </div>
-    <input type="range" id="size-slider" min="1" max="20" value="1" style="display:none; position: absolute;">
-    <div class="toolbar-divider"></div>
-    <div>
-      <button id="zoom-in"><i class="fas fa-search-plus"></i> Zoom In</button>
-      <button id="zoom-out"><i class="fas fa-search-minus"></i> Zoom Out</button>
-    </div>
-    <div class="toolbar-divider"></div>
-    <div>
-      <button id="prev-page"><i class="fas fa-chevron-left"></i> Prev</button>
-      <button id="next-page">Next <i class="fas fa-chevron-right"></i></button>
-    </div>
-    <div class="toolbar-divider"></div>
-    <div>
-      <button id="open-pdf"><i class="fas fa-file-pdf"></i> Open PDF</button>
-      <button id="save"><i class="fas fa-save"></i> Save</button>
+    
+    <div class="toolbar-row">
+      <div class="toolbar-group drawing-tools">
+        <button id="pen" class="tool-button"><i class="fas fa-pen"></i> Pen</button>
+        <input type="color" id="pen-color" value="#000000" title="Pen Color" class="color-picker">
+        <button id="highlighter" class="tool-button"><i class="fas fa-highlighter"></i> Highlighter</button>
+        <input type="color" id="highlighter-color" value="#ffff00" title="Highlighter Color" class="color-picker">
+        <button id="text" class="tool-button"><i class="fas fa-font"></i> Text</button>
+        <input type="color" id="text-color" value="#000000" title="Text Color" class="color-picker">
+        <button id="eraser" class="tool-button"><i class="fas fa-eraser"></i> Eraser</button>
+      </div>
+      
+      <!-- Size control panel that appears when drawing tools are selected -->
+      <div id="size-control-panel">
+        <div class="size-label">Size: <span id="size-value">1</span>px</div>
+        <input type="range" id="size-slider" min="1" max="20" value="1">
+        <div class="size-preview">
+          <div id="size-preview-dot"></div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- Toolbar toggle button -->
+  <button id="toolbar-toggle" title="Toggle Toolbar">
+    <i class="fas fa-chevron-up"></i>
+  </button>
 
   <div id="no-pdf-message">Please click "Open PDF" to open a PDF file.</div>
 
   <div id="canvas-wrapper">
-    <canvas id="pdf-canvas"></canvas>
-    <canvas id="annotation-canvas"></canvas>
+    <div class="canvas-container">
+      <canvas id="pdf-canvas"></canvas>
+      <canvas id="annotation-canvas"></canvas>
+    </div>
+    <div id="scroll-indicator" class="scroll-indicator">
+      <i class="fas fa-arrows-alt"></i> Scroll to view more
+    </div>
+  </div>
+
+  <!-- Text Annotation Modal -->
+  <div id="text-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Add Text Annotation</h3>
+      <textarea id="text-input" placeholder="Enter your text here..."></textarea>
+      <div class="text-options">
+        <label for="font-size">Font Size:</label>
+        <select id="font-size">
+          <option value="12">12px</option>
+          <option value="14">14px</option>
+          <option value="16" selected>16px</option>
+          <option value="18">18px</option>
+          <option value="20">20px</option>
+          <option value="24">24px</option>
+          <option value="28">28px</option>
+          <option value="32">32px</option>
+        </select>
+        <label for="font-family">Font:</label>
+        <select id="font-family">
+          <option value="Arial, sans-serif" selected>Arial</option>
+          <option value="'Times New Roman', serif">Times New Roman</option>
+          <option value="'Courier New', monospace">Courier New</option>
+          <option value="Georgia, serif">Georgia</option>
+          <option value="Verdana, sans-serif">Verdana</option>
+        </select>
+      </div>
+      <button id="add-text-btn">Add Text</button>
+    </div>
+  </div>
+
+  <!-- Shortcuts Modal -->
+  <div id="shortcuts-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Keyboard Shortcuts</h3>
+      <div class="shortcuts-list">
+        <div class="shortcut-group">
+          <h4>Tools</h4>
+          <p><strong>P</strong> - Pen Tool</p>
+          <p><strong>H</strong> - Highlighter Tool</p>
+          <p><strong>T</strong> - Text Tool</p>
+          <p><strong>E</strong> - Eraser Tool</p>
+        </div>
+        <div class="shortcut-group">
+          <h4>Navigation</h4>
+          <p><strong>←</strong> - Previous Page</p>
+          <p><strong>→</strong> - Next Page</p>
+          <p><strong>+</strong> - Zoom In</p>
+          <p><strong>-</strong> - Zoom Out</p>
+          <p><strong>W</strong> - Fit to Width</p>
+        </div>
+        <div class="shortcut-group">
+          <h4>Actions</h4>
+          <p><strong>Ctrl+S</strong> - Save PDF</p>
+          <p><strong>F</strong> - Toggle Toolbar</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Save Quality Modal -->
+  <div id="save-quality-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h3>Save PDF Quality Settings</h3>
+      <div class="quality-options">
+        <div class="quality-option">
+          <input type="radio" id="quality-standard" name="quality" value="150" checked>
+          <label for="quality-standard">
+            <strong>Standard Quality</strong>
+            <p>Good balance between file size and quality (150 DPI)</p>
+          </label>
+        </div>
+        <div class="quality-option">
+          <input type="radio" id="quality-high" name="quality" value="300">
+          <label for="quality-high">
+            <strong>High Quality</strong>
+            <p>Better quality, larger file size (300 DPI)</p>
+          </label>
+        </div>
+        <div class="quality-option">
+          <input type="radio" id="quality-ultra" name="quality" value="600">
+          <label for="quality-ultra">
+            <strong>Ultra Quality</strong>
+            <p>Best quality, much larger file size (600 DPI)</p>
+          </label>
+        </div>
+      </div>
+      <div class="quality-actions">
+        <button id="save-with-quality" class="primary-button">Save PDF</button>
+        <button id="cancel-save" class="secondary-button">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
