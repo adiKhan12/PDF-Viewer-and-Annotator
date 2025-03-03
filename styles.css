@@ -173,7 +173,7 @@ h1 {
 
 /* Size control panel */
 #size-control-panel {
-  display: none;
+  display: none; /* Hidden by default */
   background-color: #f5f5f5;
   border-radius: 8px;
   padding: 6px 10px;

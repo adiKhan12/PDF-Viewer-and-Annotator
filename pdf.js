@@ -198,14 +198,18 @@ eraserButton.addEventListener('click', (e) => {
     changeCursorStyle('crosshair');
 });
 
-// Set pen as the default active tool when the page loads
+// Initialize the UI
 window.addEventListener('DOMContentLoaded', () => {
     setActiveTool(penButton);
     updateZoomLevel();
     addShortcutTooltips();
     
-    // Initialize the size control panel
-    showSizeControlPanel();
+    // Initialize the size control panel - only show it if a drawing tool is active
+    if (tool === 'pen' || tool === 'highlighter' || tool === 'eraser') {
+        showSizeControlPanel();
+    } else {
+        hideSizeControlPanel();
+    }
     updateSizePreview();
     
     // Initialize toolbar toggle
@@ -936,17 +940,3 @@ function toggleToolbar() {
         }
     }, 300);
 }
-
-// Initialize the UI
-window.addEventListener('DOMContentLoaded', () => {
-    setActiveTool(penButton);
-    updateZoomLevel();
-    addShortcutTooltips();
-    
-    // Initialize the size control panel
-    showSizeControlPanel();
-    updateSizePreview();
-    
-    // Initialize toolbar toggle
-    initToolbarToggle();
-});
