@@ -1,6 +1,6 @@
 # PDF Annotation Tool
 
-A user-friendly, in-browser PDF annotation tool that allows you to open, view, annotate, and save PDF files. Built with HTML, CSS, and JavaScript, and leveraging the jsPDF libraries for generating the PDF document.
+A user-friendly, in-browser PDF annotation tool that allows you to open, view, annotate, and save PDF files. Built with HTML, CSS, and JavaScript, and leveraging the PDF.js library for rendering and jsPDF for generating PDF documents.
 
 ## Features
 
@@ -11,7 +11,13 @@ A user-friendly, in-browser PDF annotation tool that allows you to open, view, a
 - [x] Zoom, navigate, and save annotated PDFs with quality options
 - [x] Keyboard shortcuts for all major functions
 - [x] Responsive design for different screen sizes
-- [ ] Integrate Large Language Model (LLM) for document interaction (Upcoming)
+- [x] AI-powered document processing (DeepSeek LLM integration)
+  - [x] Text translation to multiple languages
+  - [x] Document summarization
+  - [x] Information extraction
+  - [x] OCR for scanned documents (via Tesseract.js)
+- [x] Intelligent text extraction with preserved formatting
+- [x] User notifications system for operation feedback
 
 ## Installation
 
@@ -37,6 +43,16 @@ Then, open the `index.html` file in your preferred web browser.
 6. Toggle the toolbar visibility with the (F) key or the toggle button
 7. Save the annotated PDF by clicking the "Save" button and selecting quality options
 
+### AI Features
+
+1. Access AI tools by clicking the respective buttons in the toolbar:
+   - **Translate**: Translate selected text or entire pages to different languages
+   - **Summarize**: Generate concise summaries of PDF content
+   - **Extract Info**: Extract specific information from the document
+2. Use OCR for scanned documents:
+   - The tool automatically detects when a document needs OCR
+   - Text extraction preserves original formatting and layout
+
 ## Keyboard Shortcuts
 
 | Key | Function |
@@ -51,6 +67,7 @@ Then, open the `index.html` file in your preferred web browser.
 | - | Zoom Out |
 | W | Fit to Width |
 | F | Toggle Toolbar |
+| L | Toggle AI Panel |
 | Ctrl+S | Save PDF |
 
 ## Contributing
