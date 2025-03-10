@@ -50,6 +50,37 @@ const saveWithQualityButton = document.getElementById('save-with-quality');
 const cancelSaveButton = document.getElementById('cancel-save');
 const qualityOptions = document.getElementsByName('quality');
 
+// Add these new constants for the AI panel
+const translateButton = document.getElementById('translate-button');
+const summarizeButton = document.getElementById('summarize-button');
+const extractButton = document.getElementById('extract-button');
+const aiPanel = document.getElementById('ai-panel');
+const closeAiPanel = document.getElementById('close-ai-panel');
+
+// Translation section elements
+const sourceText = document.getElementById('source-text');
+const targetLanguage = document.getElementById('target-language');
+const translateTextButton = document.getElementById('translate-text-button');
+const translatePageButton = document.getElementById('translate-page-button');
+const translationResult = document.getElementById('translation-result');
+const addTranslationAnnotation = document.getElementById('add-translation-annotation');
+
+// Summarization section elements
+const summarizeText = document.getElementById('summarize-text');
+const summaryLength = document.getElementById('summary-length');
+const summarizeTextButton = document.getElementById('summarize-text-button');
+const summarizePageButton = document.getElementById('summarize-page-button');
+const summaryResult = document.getElementById('summary-result');
+const addSummaryAnnotation = document.getElementById('add-summary-annotation');
+
+// Information extraction section elements
+const extractText = document.getElementById('extract-text');
+const extractionQuery = document.getElementById('extraction-query');
+const extractInfoButton = document.getElementById('extract-info-button');
+const extractFromPageButton = document.getElementById('extract-from-page-button');
+const extractionResult = document.getElementById('extraction-result');
+const addExtractionAnnotation = document.getElementById('add-extraction-annotation');
+
 let tool = 'pen';
 let penSize = 1;
 let penColor = '#000000';
@@ -79,6 +110,9 @@ fileInput.addEventListener('change', async (e) => {
         alert('Please select a PDF file.');
         return;
     }
+
+    // Clear AI panel fields when loading a new PDF
+    clearAIPanelFields();
 
     noPdfMessage.style.display = 'none';
     // Show the canvas wrapper immediately to ensure it has dimensions
@@ -129,15 +163,15 @@ prevPageButton.addEventListener('click', () => {
     pageNum--;
     updatePageCounter();
     renderPDF(pdfData);
+    clearAIPanelFields();
 });
 
-nextPageButton.addEventListener('click', async () => {
-    if (!pdfData) return; // Prevent going beyond the last page if pdfData is not available
-    const numPages = pdfData.numPages;
-    if (pageNum >= numPages) return;
+nextPageButton.addEventListener('click', () => {
+    if (pageNum >= pdfData.numPages) return; // Prevent going beyond the last page
     pageNum++;
     updatePageCounter();
     renderPDF(pdfData);
+    clearAIPanelFields();
 });
 
 function updatePageCounter() {
@@ -214,6 +248,9 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // Initialize toolbar toggle
     initToolbarToggle();
+    
+    // Initialize AI panel
+    initAIPanel();
 });
 
 penColorPicker.addEventListener('input', (e) => {
@@ -437,6 +474,9 @@ async function renderPDF(pdfDoc) {
     
     // Check if scrolling is needed and show indicator
     checkScrollNeeded();
+
+    // Clear AI panel fields when a new PDF is loaded
+    clearAIPanelFields();
 }
 
 function renderAnnotations() {
@@ -495,7 +535,7 @@ saveButton.addEventListener('click', () => {
         noPdfMessage.style.display = 'block';
         return;
     }
-    
+
     // Show the quality settings modal
     saveQualityModal.style.display = 'block';
 });
@@ -533,18 +573,18 @@ saveWithQualityButton.addEventListener('click', async () => {
         const SCALE_FACTOR = selectedDPI / 72; // PDF default is 72 DPI
 
         // Create a PDF with the dimensions of the first page
-        const pdf = new jsPDF('p', 'pt', [originalPageDimensions[1].width, originalPageDimensions[1].height]);
+    const pdf = new jsPDF('p', 'pt', [originalPageDimensions[1].width, originalPageDimensions[1].height]);
 
         // Process each page
-        for (let i = 1; i <= pdfData.numPages; i++) {
+    for (let i = 1; i <= pdfData.numPages; i++) {
             // Get the original page dimensions
             const { width, height } = originalPageDimensions[i];
-            
+
             // Create a high-resolution canvas
-            const tempCanvas = document.createElement('canvas');
+        const tempCanvas = document.createElement('canvas');
             tempCanvas.width = width * SCALE_FACTOR;
             tempCanvas.height = height * SCALE_FACTOR;
-            const tempContext = tempCanvas.getContext('2d');
+        const tempContext = tempCanvas.getContext('2d');
             
             // Set high-quality rendering
             tempContext.imageSmoothingEnabled = true;
@@ -561,8 +601,8 @@ saveWithQualityButton.addEventListener('click', async () => {
             }).promise;
             
             // Draw the annotations on the high-resolution canvas
-            if (annotations[i]) {
-                for (const annotation of annotations[i]) {
+        if (annotations[i]) {
+            for (const annotation of annotations[i]) {
                     // Scale the line width appropriately
                     tempContext.lineWidth = annotation.penSize * SCALE_FACTOR;
                     
@@ -574,20 +614,20 @@ saveWithQualityButton.addEventListener('click', async () => {
                         tempContext.globalAlpha = 1.0;
                     }
                     
-                    tempContext.globalCompositeOperation = annotation.tool === 'eraser' ? 'destination-out' : 'source-over';
-                    tempContext.beginPath();
+                tempContext.globalCompositeOperation = annotation.tool === 'eraser' ? 'destination-out' : 'source-over';
+                tempContext.beginPath();
 
                     // Scale all points to the high-resolution canvas
-                    const [firstPoint, ...remainingPoints] = annotation.points;
+                const [firstPoint, ...remainingPoints] = annotation.points;
                     tempContext.moveTo(firstPoint.x * SCALE_FACTOR, firstPoint.y * SCALE_FACTOR);
 
-                    for (const point of remainingPoints) {
+                for (const point of remainingPoints) {
                         tempContext.lineTo(point.x * SCALE_FACTOR, point.y * SCALE_FACTOR);
-                    }
-
-                    tempContext.stroke();
                 }
+
+                tempContext.stroke();
             }
+        }
 
             // Draw text annotations
             if (textAnnotations[i]) {
@@ -608,9 +648,9 @@ saveWithQualityButton.addEventListener('click', async () => {
             }
 
             // Add a new page for each page after the first
-            if (i > 1) {
-                pdf.addPage([width, height]);
-            }
+        if (i > 1) {
+            pdf.addPage([width, height]);
+        }
 
             // Add the high-quality image to the PDF
             // Use higher quality settings for the image
@@ -745,6 +785,7 @@ document.addEventListener('keydown', (e) => {
                 pageNum--;
                 updatePageCounter();
                 renderPDF(pdfData);
+                clearAIPanelFields();
             }
             break;
         case 'ArrowRight': // Next page
@@ -752,6 +793,7 @@ document.addEventListener('keydown', (e) => {
                 pageNum++;
                 updatePageCounter();
                 renderPDF(pdfData);
+                clearAIPanelFields();
             }
             break;
             
@@ -784,6 +826,11 @@ document.addEventListener('keydown', (e) => {
         // Toggle toolbar
         case 'f': // Toggle toolbar
             toggleToolbar();
+            break;
+            
+        // Toggle AI panel
+        case 'l': // Toggle AI panel
+            toggleAIPanel();
             break;
             
         default:
@@ -939,4 +986,396 @@ function toggleToolbar() {
             }
         }
     }, 300);
+}
+
+// Initialize AI panel functionality
+function initAIPanel() {
+    // Populate language dropdown
+    LLMService.populateLanguageOptions(targetLanguage);
+    
+    // Add event listeners for AI panel buttons
+    translateButton.addEventListener('click', () => {
+        showAIPanel('translation');
+    });
+    
+    summarizeButton.addEventListener('click', () => {
+        showAIPanel('summarization');
+    });
+    
+    extractButton.addEventListener('click', () => {
+        showAIPanel('extraction');
+    });
+    
+    closeAiPanel.addEventListener('click', hideAIPanel);
+    
+    // Translation functionality
+    translateTextButton.addEventListener('click', async () => {
+        if (!sourceText.value.trim()) {
+            alert('Please enter text to translate');
+            return;
+        }
+        
+        try {
+            setLoading(translationResult, true);
+            const result = await LLMService.translateText(sourceText.value, targetLanguage.value);
+            translationResult.textContent = result;
+            setLoading(translationResult, false);
+        } catch (error) {
+            setLoading(translationResult, false);
+            translationResult.textContent = `Error: ${error.message}`;
+        }
+    });
+    
+    translatePageButton.addEventListener('click', async () => {
+        if (!pdfData) {
+            alert('Please open a PDF first');
+            return;
+        }
+        
+        try {
+            showNotification('Extracting text from page...', 'info');
+            const text = await extractTextFromCurrentPage();
+            sourceText.value = text;
+            hideNotification();
+            
+            // Scroll to the translate button to make it visible
+            translateTextButton.scrollIntoView({ behavior: 'smooth' });
+            
+            // Highlight the translate button to prompt user action
+            translateTextButton.classList.add('highlight-button');
+            setTimeout(() => {
+                translateTextButton.classList.remove('highlight-button');
+            }, 2000);
+            
+        } catch (error) {
+            hideNotification();
+            showNotification(`Error: ${error.message}`, 'error');
+            setTimeout(hideNotification, 3000);
+        }
+    });
+    
+    addTranslationAnnotation.addEventListener('click', () => {
+        if (!translationResult.textContent || !pdfData) return;
+        
+        const text = translationResult.textContent;
+        const x = 50; // Default position
+        const y = 100;
+        addTextAnnotation(text, x, y);
+        hideAIPanel();
+    });
+    
+    // Summarization functionality
+    summarizeTextButton.addEventListener('click', async () => {
+        if (!summarizeText.value.trim()) {
+            alert('Please enter text to summarize');
+            return;
+        }
+        
+        try {
+            setLoading(summaryResult, true);
+            const result = await LLMService.summarizeContent(summarizeText.value, summaryLength.value);
+            summaryResult.textContent = result;
+            setLoading(summaryResult, false);
+        } catch (error) {
+            setLoading(summaryResult, false);
+            summaryResult.textContent = `Error: ${error.message}`;
+        }
+    });
+    
+    summarizePageButton.addEventListener('click', async () => {
+        if (!pdfData) {
+            alert('Please open a PDF first');
+            return;
+        }
+        
+        try {
+            showNotification('Extracting text from page...', 'info');
+            const text = await extractTextFromCurrentPage();
+            summarizeText.value = text;
+            hideNotification();
+            
+            // Scroll to the summarize button to make it visible
+            summarizeTextButton.scrollIntoView({ behavior: 'smooth' });
+            
+            // Highlight the summarize button to prompt user action
+            summarizeTextButton.classList.add('highlight-button');
+            setTimeout(() => {
+                summarizeTextButton.classList.remove('highlight-button');
+            }, 2000);
+            
+        } catch (error) {
+            hideNotification();
+            showNotification(`Error: ${error.message}`, 'error');
+            setTimeout(hideNotification, 3000);
+        }
+    });
+    
+    addSummaryAnnotation.addEventListener('click', () => {
+        if (!summaryResult.textContent || !pdfData) return;
+        
+        const text = summaryResult.textContent;
+        const x = 50; // Default position
+        const y = 100;
+        addTextAnnotation(text, x, y);
+        hideAIPanel();
+    });
+    
+    // Information extraction functionality
+    extractInfoButton.addEventListener('click', async () => {
+        if (!extractText.value.trim() || !extractionQuery.value.trim()) {
+            alert('Please enter text to analyze and specify what information to extract');
+            return;
+        }
+        
+        try {
+            setLoading(extractionResult, true);
+            const result = await LLMService.extractInformation(extractText.value, extractionQuery.value);
+            extractionResult.textContent = result;
+            setLoading(extractionResult, false);
+        } catch (error) {
+            setLoading(extractionResult, false);
+            extractionResult.textContent = `Error: ${error.message}`;
+        }
+    });
+    
+    extractFromPageButton.addEventListener('click', async () => {
+        if (!pdfData || !extractionQuery.value.trim()) {
+            alert('Please open a PDF and specify what information to extract');
+            return;
+        }
+        
+        try {
+            showNotification('Extracting text from page...', 'info');
+            const text = await extractTextFromCurrentPage();
+            extractText.value = text;
+            hideNotification();
+            
+            // Scroll to the extract button to make it visible
+            extractInfoButton.scrollIntoView({ behavior: 'smooth' });
+            
+            // Highlight the extract button to prompt user action
+            extractInfoButton.classList.add('highlight-button');
+            setTimeout(() => {
+                extractInfoButton.classList.remove('highlight-button');
+            }, 2000);
+            
+        } catch (error) {
+            hideNotification();
+            showNotification(`Error: ${error.message}`, 'error');
+            setTimeout(hideNotification, 3000);
+        }
+    });
+    
+    addExtractionAnnotation.addEventListener('click', () => {
+        if (!extractionResult.textContent || !pdfData) return;
+        
+        const text = extractionResult.textContent;
+        const x = 50; // Default position
+        const y = 100;
+        addTextAnnotation(text, x, y);
+        hideAIPanel();
+    });
+}
+
+// Show AI panel with specific section active
+function showAIPanel(section) {
+    // Hide all sections first
+    document.getElementById('translation-section').style.display = 'none';
+    document.getElementById('summarization-section').style.display = 'none';
+    document.getElementById('extraction-section').style.display = 'none';
+    
+    // Show the requested section
+    if (section === 'translation') {
+        document.getElementById('translation-section').style.display = 'block';
+        document.getElementById('ai-panel-title').textContent = 'Translation';
+    } else if (section === 'summarization') {
+        document.getElementById('summarization-section').style.display = 'block';
+        document.getElementById('ai-panel-title').textContent = 'Summarization';
+    } else if (section === 'extraction') {
+        document.getElementById('extraction-section').style.display = 'block';
+        document.getElementById('ai-panel-title').textContent = 'Information Extraction';
+    }
+    
+    // Show the panel
+    aiPanel.classList.add('visible');
+}
+
+// Hide AI panel
+function hideAIPanel() {
+    aiPanel.classList.remove('visible');
+}
+
+// Toggle AI panel visibility
+function toggleAIPanel() {
+    if (aiPanel.classList.contains('visible')) {
+        hideAIPanel();
+    } else {
+        showAIPanel('translation'); // Default to translation section
+    }
+}
+
+// Set loading state for a container
+function setLoading(element, isLoading) {
+    if (isLoading) {
+        element.classList.add('loading');
+    } else {
+        element.classList.remove('loading');
+    }
+}
+
+// Extract text from the current PDF page
+async function extractTextFromCurrentPage() {
+    if (!pdfData) return '';
+    
+    try {
+        const page = await pdfData.getPage(pageNum);
+        
+        // First try to extract text directly from the PDF
+        const textContent = await page.getTextContent();
+        let extractedText = '';
+        let lastY;
+        let textItems = [];
+        
+        // Collect all text items with their positions
+        textContent.items.forEach(item => {
+            textItems.push({
+                text: item.str,
+                x: item.transform[4],
+                y: item.transform[5],
+                height: item.height
+            });
+        });
+        
+        // Sort by vertical position (top to bottom)
+        textItems.sort((a, b) => b.y - a.y);
+        
+        // Process text items to preserve layout
+        let currentLine = [];
+        let currentY = textItems.length > 0 ? textItems[0].y : 0;
+        const lineHeightThreshold = textItems.length > 0 ? textItems[0].height * 1.5 : 0;
+        
+        textItems.forEach(item => {
+            // If this item is on a new line
+            if (Math.abs(item.y - currentY) > lineHeightThreshold) {
+                // Add the current line to the extracted text
+                if (currentLine.length > 0) {
+                    // Sort the current line by x position (left to right)
+                    currentLine.sort((a, b) => a.x - b.x);
+                    extractedText += currentLine.map(i => i.text).join(' ') + '\n';
+                    
+                    // Check if this might be a paragraph break (larger gap)
+                    if (Math.abs(item.y - currentY) > lineHeightThreshold * 2) {
+                        extractedText += '\n';
+                    }
+                }
+                
+                // Start a new line
+                currentLine = [item];
+                currentY = item.y;
+            } else {
+                // Add to the current line
+                currentLine.push(item);
+            }
+        });
+        
+        // Add the last line
+        if (currentLine.length > 0) {
+            currentLine.sort((a, b) => a.x - b.x);
+            extractedText += currentLine.map(i => i.text).join(' ');
+        }
+        
+        // If no text was extracted, try OCR
+        if (extractedText.trim() === '') {
+            return await performOCROnCurrentPage();
+        }
+        
+        return extractedText;
+    } catch (error) {
+        console.error('Error extracting text:', error);
+        // Fall back to OCR if text extraction fails
+        return await performOCROnCurrentPage();
+    }
+}
+
+// Perform OCR on the current page for scanned documents
+async function performOCROnCurrentPage() {
+    try {
+        // Show OCR processing message
+        showNotification('Performing OCR on scanned page...', 'info');
+        
+        // Render the current page to a canvas for OCR
+        const page = await pdfData.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.0 }); // Higher scale for better OCR
+        
+        const ocrCanvas = document.createElement('canvas');
+        ocrCanvas.width = viewport.width;
+        ocrCanvas.height = viewport.height;
+        
+        const ocrContext = ocrCanvas.getContext('2d');
+        await page.render({
+            canvasContext: ocrContext,
+            viewport: viewport
+        }).promise;
+        
+        // Get the image data as base64
+        const imageData = ocrCanvas.toDataURL('image/jpeg');
+        
+        // Use DeepSeek LLM for OCR by describing the image
+        const result = await LLMService.performOCR(imageData);
+        
+        // Remove the temporary canvas
+        ocrCanvas.remove();
+        
+        // Hide notification
+        hideNotification();
+        
+        return result;
+    } catch (error) {
+        console.error('OCR error:', error);
+        hideNotification();
+        throw new Error('Failed to perform OCR on the current page');
+    }
+}
+
+// Show notification to the user
+function showNotification(message, type = 'info') {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        document.body.appendChild(notification);
+    }
+    
+    // Set notification content and type
+    notification.textContent = message;
+    notification.className = `notification ${type}`;
+    notification.style.display = 'block';
+}
+
+// Hide notification
+function hideNotification() {
+    const notification = document.getElementById('notification');
+    if (notification) {
+        notification.style.display = 'none';
+    }
+}
+
+// Function to clear all AI panel input and result fields
+function clearAIPanelFields() {
+    // Clear translation fields
+    document.getElementById('source-text').value = '';
+    document.getElementById('translation-result').innerHTML = '';
+    
+    // Clear summarization fields
+    document.getElementById('summarize-text').value = '';
+    document.getElementById('summary-result').innerHTML = '';
+    
+    // Clear extraction fields
+    document.getElementById('extract-text').value = '';
+    document.getElementById('extraction-result').innerHTML = '';
+    
+    // Remove loading states if any
+    const loadingElements = document.querySelectorAll('.loading');
+    loadingElements.forEach(el => el.classList.remove('loading'));
 }

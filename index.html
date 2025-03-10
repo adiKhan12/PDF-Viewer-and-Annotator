@@ -58,6 +58,15 @@
         </div>
       </div>
     </div>
+    
+    <!-- AI Tools Row -->
+    <div class="toolbar-row ai-tools-row">
+      <div class="toolbar-group ai-tools">
+        <button id="translate-button" class="ai-button"><i class="fas fa-language"></i> Translate</button>
+        <button id="summarize-button" class="ai-button"><i class="fas fa-compress-alt"></i> Summarize</button>
+        <button id="extract-button" class="ai-button"><i class="fas fa-search"></i> Extract Info</button>
+      </div>
+    </div>
   </div>
 
   <!-- Toolbar toggle button -->
@@ -74,6 +83,94 @@
     </div>
     <div id="scroll-indicator" class="scroll-indicator">
       <i class="fas fa-arrows-alt"></i> Scroll to view more
+    </div>
+  </div>
+  
+  <!-- AI Panel for Translation and other LLM features -->
+  <div id="ai-panel" class="side-panel">
+    <div class="panel-header">
+      <h3 id="ai-panel-title">AI Tools</h3>
+      <button id="close-ai-panel" class="close-panel"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="panel-content">
+      <!-- Translation Section -->
+      <div id="translation-section" class="ai-section">
+        <div class="section-header">
+          <h4>Translation</h4>
+        </div>
+        <div class="section-content">
+          <div class="input-group">
+            <label for="source-text">Text to translate:</label>
+            <textarea id="source-text" placeholder="Enter or paste text to translate..."></textarea>
+          </div>
+          <div class="input-group">
+            <label for="target-language">Target language:</label>
+            <select id="target-language"></select>
+          </div>
+          <div class="action-buttons">
+            <button id="translate-text-button" class="primary-button">Translate</button>
+            <button id="translate-page-button" class="secondary-button">Translate Current Page</button>
+          </div>
+          <div class="result-container">
+            <label for="translation-result">Translation:</label>
+            <div id="translation-result" class="result-box"></div>
+            <button id="add-translation-annotation" class="action-button">Add as Annotation</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Summarization Section -->
+      <div id="summarization-section" class="ai-section">
+        <div class="section-header">
+          <h4>Summarization</h4>
+        </div>
+        <div class="section-content">
+          <div class="input-group">
+            <label for="summarize-text">Text to summarize:</label>
+            <textarea id="summarize-text" placeholder="Enter or paste text to summarize..."></textarea>
+          </div>
+          <div class="input-group">
+            <label for="summary-length">Summary length (words):</label>
+            <input type="number" id="summary-length" min="50" max="500" value="200">
+          </div>
+          <div class="action-buttons">
+            <button id="summarize-text-button" class="primary-button">Summarize</button>
+            <button id="summarize-page-button" class="secondary-button">Summarize Current Page</button>
+          </div>
+          <div class="result-container">
+            <label for="summary-result">Summary:</label>
+            <div id="summary-result" class="result-box"></div>
+            <button id="add-summary-annotation" class="action-button">Add as Annotation</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Information Extraction Section -->
+      <div id="extraction-section" class="ai-section">
+        <div class="section-header">
+          <h4>Information Extraction</h4>
+        </div>
+        <div class="section-content">
+          <div class="input-group">
+            <label for="extract-text">Text to analyze:</label>
+            <textarea id="extract-text" placeholder="Enter or paste text to analyze..."></textarea>
+          </div>
+          <div class="input-group">
+            <label for="extraction-query">What information to extract:</label>
+            <input type="text" id="extraction-query" placeholder="e.g., 'main topics', 'key dates', 'people mentioned'">
+          </div>
+          <div class="action-buttons">
+            <button id="extract-info-button" class="primary-button">Extract Information</button>
+            <button id="extract-from-page-button" class="secondary-button">Extract from Current Page</button>
+          </div>
+          <div class="result-container">
+            <label for="extraction-result">Extracted Information:</label>
+            <div id="extraction-result" class="result-box"></div>
+            <button id="add-extraction-annotation" class="action-button">Add as Annotation</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -133,6 +230,7 @@
           <h4>Actions</h4>
           <p><strong>Ctrl+S</strong> - Save PDF</p>
           <p><strong>F</strong> - Toggle Toolbar</p>
+          <p><strong>L</strong> - Toggle AI Panel</p>
         </div>
       </div>
     </div>
@@ -175,6 +273,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.4.120/build/pdf.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.0/jspdf.umd.min.js"></script>
+  <script src="llm-service.js"></script>
   <script src="pdf.js"></script>
 </body>
 
