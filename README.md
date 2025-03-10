@@ -18,8 +18,11 @@ A user-friendly, in-browser PDF annotation tool that allows you to open, view, a
   - [x] OCR for scanned documents (via Tesseract.js)
 - [x] Intelligent text extraction with preserved formatting
 - [x] User notifications system for operation feedback
+- [x] Docker support for easy deployment and consistency
 
 ## Installation
+
+### Standard Installation
 
 Clone the repository and open the `index.html` file in a web browser:
 ```
@@ -28,6 +31,29 @@ cd pdf-annotation-tool
 ```
 
 Then, open the `index.html` file in your preferred web browser.
+
+### Docker Installation
+
+If you have Docker installed, you can run the application in a container:
+
+1. Clone the repository:
+```
+git clone https://github.com/adiKhan12/pdf-annotator-javascript.git
+cd pdf-annotation-tool
+```
+
+2. Using Docker Compose (recommended):
+```
+docker-compose up -d
+```
+
+3. Or build and run with Docker directly:
+```
+docker build -t pdf-annotation-tool .
+docker run -p 8080:80 pdf-annotation-tool
+```
+
+4. Access the application in your browser at `http://localhost:8080`
 
 ## Usage
 
@@ -69,6 +95,27 @@ Then, open the `index.html` file in your preferred web browser.
 | F | Toggle Toolbar |
 | L | Toggle AI Panel |
 | Ctrl+S | Save PDF |
+
+## Development
+
+### Running for Development
+
+For development, you can use the Docker setup with volumes to see your changes immediately:
+
+```
+docker-compose up
+```
+
+This will mount your local directory to the container, so any changes you make to the files will be reflected immediately in the browser.
+
+### Building for Production
+
+For production deployment:
+
+```
+docker build -t pdf-annotation-tool:production --no-cache .
+docker run -p 80:80 pdf-annotation-tool:production
+```
 
 ## Contributing
 

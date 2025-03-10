@@ -1,0 +1,28 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Development and documentation files
+*.md
+dev.md
+LICENSE
+README.md
+
+# Node.js (if you add it in the future)
+node_modules
+npm-debug.log
+
+# IDE and editor files
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db 
